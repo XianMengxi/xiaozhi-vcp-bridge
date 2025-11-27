@@ -1,0 +1,12 @@
+Starting audio conversion test...
+Conversion failed: Error: Cannot find ffmpeg
+    at E:\code\vcp-esp32-backend\server\node_modules\fluent-ffmpeg\lib\processor.js:134:22
+    at E:\code\vcp-esp32-backend\server\node_modules\fluent-ffmpeg\lib\capabilities.js:123:9
+    at E:\code\vcp-esp32-backend\server\node_modules\fluent-ffmpeg\lib\capabilities.js:116:11
+    at E:\code\vcp-esp32-backend\server\node_modules\fluent-ffmpeg\lib\utils.js:223:16
+    at F (E:\code\vcp-esp32-backend\server\node_modules\which\which.js:68:16)
+    at E (E:\code\vcp-esp32-backend\server\node_modules\which\which.js:80:29)
+    at E:\code\vcp-esp32-backend\server\node_modules\which\which.js:89:16
+    at E:\code\vcp-esp32-backend\server\node_modules\isexe\index.js:42:5
+    at E:\code\vcp-esp32-backend\server\node_modules\isexe\windows.js:36:5
+    at FSReqCallback.oncomplete (node:fs:197:21)

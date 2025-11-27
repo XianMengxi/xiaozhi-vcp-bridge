@@ -1,0 +1,12 @@
+--- Starting Test ---
+Calling flush()...
+[TTS] Generating audio for: "Hello,..."
+[MockFetch] Start: Hello,
+[MockFetch] End: Hello,
+[MockWS] Sent data type: Buffer
+[TTS] Generating audio for: " world...."
+[MockFetch] Start:  world.
+[MockFetch] End:  world.
+[MockWS] Sent data type: Buffer
+Flush returned after 211ms
+SUCCESS: flush() waited for processing.

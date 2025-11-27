@@ -1,0 +1,18 @@
+Notice: ffmpeg is not installed. torchaudio is used to load audio
+Traceback (most recent call last):
+If you want to use ffmpeg backend to load audio, please install it by:
+	sudo apt install ffmpeg # ubuntu
+	# brew install ffmpeg # mac
+  File "E:\code\vcp-esp32-backend\python_services\test_asr.py", line 9, in <module>
+    from asr.fun_local import ASRProvider
+  File "E:\code\vcp-esp32-backend\python_services\asr\fun_local.py", line 12, in <module>
+    from .base import ASRProviderBase
+  File "E:\code\vcp-esp32-backend\python_services\asr\base.py", line 7, in <module>
+    import opuslib
+  File "D:\conda\envs\asr\lib\site-packages\opuslib\__init__.py", line 19, in <module>
+    from .exceptions import OpusError  # NOQA
+  File "D:\conda\envs\asr\lib\site-packages\opuslib\exceptions.py", line 10, in <module>
+    import opuslib.api.info
+  File "D:\conda\envs\asr\lib\site-packages\opuslib\api\__init__.py", line 20, in <module>
+    raise Exception(
+Exception: Could not find Opus library. Make sure it is installed.

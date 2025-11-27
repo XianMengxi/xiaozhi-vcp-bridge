@@ -1,0 +1,13 @@
+xiaozhi-esp32-server/
+websocket.md
+
+*.env
+client/node_modules
+
+
+server/node_modules
+server/data
+
+python_services/models
+python_services/output
+python_services/uploads

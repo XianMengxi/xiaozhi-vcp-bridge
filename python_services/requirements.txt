@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+python-multipart
+torch
+torchaudio
+funasr
+modelscope
+numpy
+opuslib
+# opuslib-next might be needed if opuslib fails, but usually opuslib is fine or we use the system one.
+# For windows, opuslib might need DLLs.
