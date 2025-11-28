@@ -102,7 +102,7 @@ class TTSHandler {
                 text: text,
                 character: this.context?.character || "saki",
                 max_text_tokens_per_sentence: 120,
-                emo_control_method: 0 // Default to 0 (no emotion control)
+                emotion_config: this.context?.emotion_config || "default"
             };
 
             // Check for emotion settings in context (if passed from Agent Config)

@@ -52,24 +52,35 @@ app.listen(OTA_PORT, () => {
 
 // --- TTS Proxy Endpoints ---
 const TTS_API_URL = process.env.TTS_API_URL || 'http://127.0.0.1:9881';
+const multer = require('multer');
+const upload = multer(); // Memory storage
 
-// Get Speakers
+// Helper for error handling
+const handleProxyResponse = async (response, res) => {
+    if (!response.ok) {
+        const text = await response.text();
+        try {
+            const json = JSON.parse(text);
+            return res.status(response.status).json(json);
+        } catch (e) {
+            return res.status(response.status).send(text);
+        }
+    }
+    const data = await response.json();
+    res.json(data);
+};
+
+// Speakers
 app.get('/api/tts/speakers', async (req, res) => {
     try {
         const response = await fetch(`${TTS_API_URL}/v1/speakers`);
-        if (!response.ok) throw new Error(`TTS API error: ${response.status}`);
-        const data = await response.json();
-        // console.log(data);
-        res.json(data);
+        await handleProxyResponse(response, res);
     } catch (error) {
         console.error('Error fetching speakers:', error);
         res.status(500).json({ error: 'Failed to fetch speakers' });
     }
 });
 
-// Add Speaker
-const multer = require('multer');
-const upload = multer(); // Memory storage
 app.post('/api/tts/speakers', upload.single('file'), async (req, res) => {
     try {
         const formData = new FormData();
@@ -78,47 +89,93 @@ app.post('/api/tts/speakers', upload.single('file'), async (req, res) => {
             const blob = new Blob([req.file.buffer], { type: req.file.mimetype });
             formData.append('file', blob, req.file.originalname);
         }
-
-        const response = await fetch(`${TTS_API_URL}/v1/speakers`, {
-            method: 'POST',
-            body: formData
-        });
-
-        if (!response.ok) throw new Error(`TTS API error: ${response.status}`);
-        const data = await response.json();
-        res.json(data);
+        const response = await fetch(`${TTS_API_URL}/v1/speakers`, { method: 'POST', body: formData });
+        await handleProxyResponse(response, res);
     } catch (error) {
         console.error('Error adding speaker:', error);
         res.status(500).json({ error: 'Failed to add speaker' });
     }
 });
 
-// Delete Speaker
 app.delete('/api/tts/speakers/:name', async (req, res) => {
     try {
-        const { name } = req.params;
-        const response = await fetch(`${TTS_API_URL}/v1/speakers/${name}`, {
-            method: 'DELETE'
-        });
-        if (!response.ok) throw new Error(`TTS API error: ${response.status}`);
-        const data = await response.json();
-        res.json(data);
+        const response = await fetch(`${TTS_API_URL}/v1/speakers/${req.params.name}`, { method: 'DELETE' });
+        await handleProxyResponse(response, res);
     } catch (error) {
         console.error('Error deleting speaker:', error);
         res.status(500).json({ error: 'Failed to delete speaker' });
     }
 });
 
-// Get Emotions
+// Emotions (Reference Audio)
 app.get('/api/tts/emotions', async (req, res) => {
     try {
         const response = await fetch(`${TTS_API_URL}/v1/emotions`);
-        if (!response.ok) throw new Error(`TTS API error: ${response.status}`);
-        const data = await response.json();
-        res.json(data);
+        await handleProxyResponse(response, res);
     } catch (error) {
         console.error('Error fetching emotions:', error);
         res.status(500).json({ error: 'Failed to fetch emotions' });
+    }
+});
+
+app.post('/api/tts/emotions', upload.single('file'), async (req, res) => {
+    try {
+        const formData = new FormData();
+        formData.append('name', req.body.name);
+        if (req.file) {
+            const blob = new Blob([req.file.buffer], { type: req.file.mimetype });
+            formData.append('file', blob, req.file.originalname);
+        }
+        const response = await fetch(`${TTS_API_URL}/v1/emotions`, { method: 'POST', body: formData });
+        await handleProxyResponse(response, res);
+    } catch (error) {
+        console.error('Error adding emotion:', error);
+        res.status(500).json({ error: 'Failed to add emotion' });
+    }
+});
+
+app.delete('/api/tts/emotions/:name', async (req, res) => {
+    try {
+        const response = await fetch(`${TTS_API_URL}/v1/emotions/${req.params.name}`, { method: 'DELETE' });
+        await handleProxyResponse(response, res);
+    } catch (error) {
+        console.error('Error deleting emotion:', error);
+        res.status(500).json({ error: 'Failed to delete emotion' });
+    }
+});
+
+// Emotion Configs
+app.get('/api/tts/emotion-configs', async (req, res) => {
+    try {
+        const response = await fetch(`${TTS_API_URL}/v1/emotion-configs`);
+        await handleProxyResponse(response, res);
+    } catch (error) {
+        console.error('Error fetching emotion configs:', error);
+        res.status(500).json({ error: 'Failed to fetch emotion configs' });
+    }
+});
+
+app.post('/api/tts/emotion-configs/:name', async (req, res) => {
+    try {
+        const response = await fetch(`${TTS_API_URL}/v1/emotion-configs/${req.params.name}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(req.body)
+        });
+        await handleProxyResponse(response, res);
+    } catch (error) {
+        console.error('Error saving emotion config:', error);
+        res.status(500).json({ error: 'Failed to save emotion config' });
+    }
+});
+
+app.delete('/api/tts/emotion-configs/:name', async (req, res) => {
+    try {
+        const response = await fetch(`${TTS_API_URL}/v1/emotion-configs/${req.params.name}`, { method: 'DELETE' });
+        await handleProxyResponse(response, res);
+    } catch (error) {
+        console.error('Error deleting emotion config:', error);
+        res.status(500).json({ error: 'Failed to delete emotion config' });
     }
 });
 

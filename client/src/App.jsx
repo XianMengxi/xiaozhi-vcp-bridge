@@ -47,6 +47,8 @@ function App() {
   const [editingTopic, setEditingTopic] = useState(null)
   const [topicName, setTopicName] = useState('')
   const [ttsSpeakers, setTtsSpeakers] = useState([])
+  const [emotions, setEmotions] = useState([])
+  const [emotionConfigs, setEmotionConfigs] = useState([])
 
   const wsRef = useRef(null)
   const messagesEndRef = useRef(null)
@@ -70,12 +72,44 @@ function App() {
     scrollToBottom()
   }, [history, isTyping])
 
+  const fetchTTSData = async () => {
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:6007';
+    try {
+      const [speakersRes, emotionsRes, configsRes] = await Promise.all([
+        fetch(`${API_URL}/api/tts/speakers`),
+        fetch(`${API_URL}/api/tts/emotions`),
+        fetch(`${API_URL}/api/tts/emotion-configs`)
+      ]);
+
+      if (speakersRes.ok) {
+        const data = await speakersRes.json();
+        setTtsSpeakers(Object.keys(data.speakers) || []);
+      }
+      if (emotionsRes.ok) {
+        const data = await emotionsRes.json();
+        setEmotions(Object.keys(data.emotions) || []);
+      }
+      if (configsRes.ok) {
+        const data = await configsRes.json();
+        setEmotionConfigs(data.configs || {});
+      }
+    } catch (err) {
+      console.error("Failed to fetch TTS data", err);
+    }
+  };
+
   useEffect(() => {
-    fetch('http://localhost:6007/api/tts/speakers')
-      .then(res => res.json())
-      .then(data => setTtsSpeakers(Object.keys(data.speakers) || []))
-      .catch(err => console.error("Failed to fetch speakers", err));
+    fetchTTSData();
   }, [])
+
+  // Re-fetch TTS data when navigating back from TTS Config page
+  useEffect(() => {
+    if (location.pathname === '/') {
+      fetchTTSData();
+    }
+  }, [location.pathname])
+
+
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -380,6 +414,8 @@ function App() {
       setAgentConfig(DEFAULT_AGENT_CONFIG);
     }
     setShowAgentModal(true);
+    // Refresh TTS data when opening modal to ensure latest options
+    fetchTTSData();
   }
 
   const closeAgentModal = () => {
@@ -1047,6 +1083,19 @@ function App() {
                 <option value="">Default (saki)</option>
                 {ttsSpeakers.map(speaker => (
                   <option key={speaker} value={speaker}>{speaker}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>Emotion Config</label>
+              <select
+                value={agentConfig.emotion_config || ''}
+                onChange={(e) => setAgentConfig({ ...agentConfig, emotion_config: e.target.value })}
+              >
+                <option value="">Default (None)</option>
+                {Object.keys(emotionConfigs).map(configName => (
+                  <option key={configName} value={configName}>{configName}</option>
                 ))}
               </select>
             </div>
