@@ -96,10 +96,25 @@ class TTSHandler {
 
         try {
             console.log(`[TTS] Generating audio for: "${text.substring(0, 20)}..."`);
-            const response = await fetch(this.ttsUrl, {
+
+            // Construct payload based on context or defaults
+            const payload = {
+                text: text,
+                character: this.context?.character || "saki",
+                max_text_tokens_per_sentence: 120,
+                emo_control_method: 0 // Default to 0 (no emotion control)
+            };
+
+            // Check for emotion settings in context (if passed from Agent Config)
+            if (this.context?.emotion) {
+                // Example: if context has emotion settings, apply them
+                // For now, we keep it simple as per requirement
+            }
+
+            const response = await fetch(`${this.ttsUrl}/tts/generate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: text })
+                body: JSON.stringify(payload)
             });
 
             if (this.stopped) return;

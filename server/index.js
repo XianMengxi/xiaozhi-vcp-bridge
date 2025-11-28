@@ -50,6 +50,78 @@ app.listen(OTA_PORT, () => {
     console.log(`OTA Server listening on port ${OTA_PORT}`);
 });
 
+// --- TTS Proxy Endpoints ---
+const TTS_API_URL = process.env.TTS_API_URL || 'http://127.0.0.1:9881';
+
+// Get Speakers
+app.get('/api/tts/speakers', async (req, res) => {
+    try {
+        const response = await fetch(`${TTS_API_URL}/v1/speakers`);
+        if (!response.ok) throw new Error(`TTS API error: ${response.status}`);
+        const data = await response.json();
+        // console.log(data);
+        res.json(data);
+    } catch (error) {
+        console.error('Error fetching speakers:', error);
+        res.status(500).json({ error: 'Failed to fetch speakers' });
+    }
+});
+
+// Add Speaker
+const multer = require('multer');
+const upload = multer(); // Memory storage
+app.post('/api/tts/speakers', upload.single('file'), async (req, res) => {
+    try {
+        const formData = new FormData();
+        formData.append('name', req.body.name);
+        if (req.file) {
+            const blob = new Blob([req.file.buffer], { type: req.file.mimetype });
+            formData.append('file', blob, req.file.originalname);
+        }
+
+        const response = await fetch(`${TTS_API_URL}/v1/speakers`, {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!response.ok) throw new Error(`TTS API error: ${response.status}`);
+        const data = await response.json();
+        res.json(data);
+    } catch (error) {
+        console.error('Error adding speaker:', error);
+        res.status(500).json({ error: 'Failed to add speaker' });
+    }
+});
+
+// Delete Speaker
+app.delete('/api/tts/speakers/:name', async (req, res) => {
+    try {
+        const { name } = req.params;
+        const response = await fetch(`${TTS_API_URL}/v1/speakers/${name}`, {
+            method: 'DELETE'
+        });
+        if (!response.ok) throw new Error(`TTS API error: ${response.status}`);
+        const data = await response.json();
+        res.json(data);
+    } catch (error) {
+        console.error('Error deleting speaker:', error);
+        res.status(500).json({ error: 'Failed to delete speaker' });
+    }
+});
+
+// Get Emotions
+app.get('/api/tts/emotions', async (req, res) => {
+    try {
+        const response = await fetch(`${TTS_API_URL}/v1/emotions`);
+        if (!response.ok) throw new Error(`TTS API error: ${response.status}`);
+        const data = await response.json();
+        res.json(data);
+    } catch (error) {
+        console.error('Error fetching emotions:', error);
+        res.status(500).json({ error: 'Failed to fetch emotions' });
+    }
+});
+
 // --- ESP32 / Frontend Server ---
 const wss = new WebSocket.Server({ port: PORT });
 

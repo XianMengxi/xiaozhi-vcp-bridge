@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
+import TTSConfig from './TTSConfig'
 import './App.css'
 
 const DEFAULT_AGENT_CONFIG = {
@@ -44,10 +46,16 @@ function App() {
   const [showTopicModal, setShowTopicModal] = useState(false)
   const [editingTopic, setEditingTopic] = useState(null)
   const [topicName, setTopicName] = useState('')
+  const [ttsSpeakers, setTtsSpeakers] = useState([])
 
   const wsRef = useRef(null)
   const messagesEndRef = useRef(null)
   const reconnectTimeoutRef = useRef(null)
+
+  const location = useLocation();
+  const navigate = useNavigate();
+
+
 
   useEffect(() => {
     // Auto-connect on load is disabled to allow settings configuration first
@@ -61,6 +69,13 @@ function App() {
   useEffect(() => {
     scrollToBottom()
   }, [history, isTyping])
+
+  useEffect(() => {
+    fetch('http://localhost:6007/api/tts/speakers')
+      .then(res => res.json())
+      .then(data => setTtsSpeakers(Object.keys(data.speakers) || []))
+      .catch(err => console.error("Failed to fetch speakers", err));
+  }, [])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -616,7 +631,8 @@ function App() {
       messages: messages,
       context: {
         agentId: currentAgent,
-        topicId: currentTopic
+        topicId: currentTopic,
+        character: agent?.character
       }
     };
 
@@ -625,6 +641,10 @@ function App() {
   }
 
   const currentAgentData = agents.find(a => a.id === currentAgent);
+
+  if (location.pathname === '/tts') {
+    return <TTSConfig />;
+  }
 
   return (
     <div className="app-container">
@@ -644,6 +664,13 @@ function App() {
             style={{ width: '100%', marginBottom: '10px' }}
           >
             ⚙️ Settings
+          </button>
+          <button
+            className="btn btn-info"
+            onClick={() => navigate('/tts')}
+            style={{ width: '100%', marginBottom: '10px', background: '#17a2b8', color: 'white' }}
+          >
+            🗣️ TTS Config
           </button>
           {status === 'disconnected' ? (
             <button
@@ -1008,6 +1035,19 @@ function App() {
               >
                 <option value="true">True</option>
                 <option value="false">False</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>TTS Character</label>
+              <select
+                value={agentConfig.character || ''}
+                onChange={(e) => setAgentConfig({ ...agentConfig, character: e.target.value })}
+              >
+                <option value="">Default (saki)</option>
+                {ttsSpeakers.map(speaker => (
+                  <option key={speaker} value={speaker}>{speaker}</option>
+                ))}
               </select>
             </div>
 
